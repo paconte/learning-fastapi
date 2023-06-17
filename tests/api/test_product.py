@@ -1,40 +1,9 @@
-from typing import Dict, List
+from typing import List
 
 import httpx
 import pytest
 
-from app.database import Database
-from app.models.products import Product, ProductIn
-
-
-@pytest.fixture(scope="module")
-def collection() -> Dict[int, Product]:
-    return dict()
-
-
-@pytest.fixture(scope="module")
-def mock_products() -> List[ProductIn]:
-    new_product1 = ProductIn(
-        name="Fairphone 4",
-        category="smartphone",
-        score="90",
-    )
-    new_product2 = ProductIn(
-        name="iPhone 14",
-        category="smartphone",
-        score="75",
-    )
-    return [new_product1, new_product2]
-
-
-@pytest.fixture(scope="module")
-async def mock_db(
-    collection: Dict[int, Product], mock_products: List[ProductIn]
-) -> Database:
-    db = Database(Product, collection)
-    for product in mock_products:
-        await db.save(product)
-    return db
+from app.models.products import ProductIn
 
 
 @pytest.mark.asyncio
@@ -66,6 +35,7 @@ async def test_get_all(
         assert response.json()[i]["name"] == product.name
         assert response.json()[i]["category"] == product.category
         assert response.json()[i]["score"] == product.score
+        assert response.json()[i]["review_ids"] == product.review_ids
 
 
 @pytest.mark.asyncio
@@ -80,6 +50,7 @@ async def test_get_single(
         assert response.json()["name"] == product.name
         assert response.json()["category"] == product.category
         assert response.json()["score"] == product.score
+        assert response.json()["review_ids"] == product.review_ids
 
 
 @pytest.mark.asyncio
@@ -99,17 +70,29 @@ async def test_update(
     client: httpx.AsyncClient, mock_products: List[ProductIn]
 ) -> None:
     response = await client.get("/products")
-    print(response.json())
     for i, product in enumerate(mock_products):
         url = f"/products/{str(i)}"
         product.score = "89"
-        print(product.dict())
         response = await client.put(url, json=product.dict())
         assert response.status_code == 200
         assert response.json()["id"] == i
         assert response.json()["name"] == product.name
         assert response.json()["category"] == product.category
         assert response.json()["score"] == "89"
+        assert response.json()["review_ids"] == product.review_ids
+
+
+async def test_update_wrong(
+    client: httpx.AsyncClient, mock_products: List[ProductIn]
+) -> None:
+    url = f"/products/{str(len(mock_products) + 1)}"
+    product = mock_products[0]
+    product.score = "89"
+    response = await client.put(url, json=product.dict())
+    assert response.status_code == 404
+    assert (
+        response.json()["detail"] == "Product with supplied ID does not exist"
+    )
 
 
 @pytest.mark.asyncio
