@@ -1,18 +1,19 @@
 from typing import List
-from app.database import Database
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.database import Database
 from app.models.products import Product, ProductIn
 
 product_router = APIRouter()
 product_db = Database(Product)
 
+
 # Products
 @product_router.get("/products", response_model=List[Product])
 async def get_products() -> List[Product]:
     # Retrieve a list of all products
-     return await product_db.get_all()
+    return await product_db.get_all()
 
 
 @product_router.get("/products/{id}", response_model=Product)

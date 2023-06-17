@@ -3,7 +3,9 @@ from typing import Any, Dict, List
 
 
 class Database:
-    def __init__(self, model: Any, collection: Dict[int, Any] = dict()) -> None:
+    def __init__(
+        self, model: Any, collection: Dict[int, Any] = dict()
+    ) -> None:
         self.index: int = 0
         self.collection: Dict[int, Any] = collection
         self.model: Any = model
