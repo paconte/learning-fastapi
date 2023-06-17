@@ -32,7 +32,9 @@ class Database:
             self.index += 1
             return new_data
 
-    async def update(self, id: int, data: Any):
+    async def update(self, id: int, data: Any) -> Any:
         with self.Lock:
-            data.id = id
-            self.collection[id] = data
+            new_data = self._insert_index(data, id)
+            if id in self.collection:
+                self.collection[id] = new_data
+                return new_data
