@@ -87,7 +87,6 @@ async def test_update_wrong(
 ) -> None:
     url = f"/products/{str(len(mock_products) + 1)}"
     product = mock_products[0]
-    product.score = "89"
     response = await client.put(url, json=product.dict())
     assert response.status_code == 404
     assert (

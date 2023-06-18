@@ -6,6 +6,7 @@ import pytest
 
 from app.main import app
 from app.models.products import ProductIn
+from app.models.reviews import ReviewIn
 
 
 @pytest.fixture(scope="session")
@@ -36,3 +37,20 @@ def mock_products() -> List[ProductIn]:
         review_ids=[],
     )
     return [new_product1, new_product2]
+
+
+@pytest.fixture(scope="module")
+def mock_reviews() -> List[ReviewIn]:
+    new_review1 = ReviewIn(
+        user_id=1,
+        content="I really like this product",
+    )
+    new_review2 = ReviewIn(
+        user_id=2,
+        content="I don't really like this product",
+    )
+    new_review3 = ReviewIn(
+        user_id=3,
+        content="I love this product",
+    )
+    return [new_review1, new_review2, new_review3]
