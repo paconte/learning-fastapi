@@ -33,7 +33,7 @@ async def sign_in(form: OAuth2PasswordRequestForm = Depends()) -> dict:
     if not user_passwd:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User with email does not exist.",
+            detail="Wrong credentials.",
         )
     if hasher.verify(form.password, user_passwd):
         access_token = create_token(form.username)

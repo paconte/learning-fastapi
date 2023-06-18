@@ -19,18 +19,17 @@ def good_user_auth() -> Dict[str, str]:
         "password": "test_password",
     }
 
+
 @pytest.fixture(scope="module")
 def headers() -> Dict[str, str]:
-    return {
-        "accept": "application/json",
-        "Content-Type": "application/json"
-    }
+    return {"accept": "application/json", "Content-Type": "application/json"}
+
 
 @pytest.fixture(scope="module")
 def form_headers() -> Dict[str, str]:
     return {
         "accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
     }
 
 
