@@ -23,8 +23,10 @@ async def get_product_reviews(product_id: int) -> List[Review]:
         product = await product_db.get(product_id)
         queries = []
         for review_id in product.review_ids:
-            queries.append(await review_db.get(review_id))
-        return await asyncio.gather(*queries)
+            queries.append(review_db.get(review_id))
+        result = await asyncio.gather(*queries)
+        print(result)
+        return result
 
 
 @review_router.get("/products/{product_id}/reviews/{review_id}")
@@ -64,11 +66,14 @@ async def create_product_review(product_id: int, body: ReviewIn):
             )
         review = await review_db.save(body)
         product.review_ids.append(review.id)
-        return {"message": "Product created successfully"}
+        await product_db.update(product_id, product)
+        return {"message": "Review created successfully"}
 
 
 @review_router.put("/products/{product_id}/reviews/{review_id}")
-async def update_product_review(product_id: int, review_id: int):
+async def update_product_review(
+    product_id: int, review_id: int, body: ReviewIn
+) -> Review:
     # Update a specific review for a specific product
     lock = Lock()
     with lock:
@@ -94,7 +99,7 @@ async def update_product_review(product_id: int, review_id: int):
                     "associated with the product with supplied ID"
                 ),
             )
-        return {"message": "Review updated successfully"}
+        return await review_db.update(review_id, body)
 
 
 @review_router.delete("/products/{product_id}/reviews/{review_id}")
@@ -106,7 +111,7 @@ async def delete_product_review(product_id: int, review_id: int):
         if not review:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Review with supplied ID does not exist",
+                detail="Review not found",
             )
 
         product = await product_db.get(product_id)
