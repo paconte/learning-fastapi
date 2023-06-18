@@ -45,3 +45,16 @@ def test_verify_token_invalid():
         verify_token(invalid_token, user_db)
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_verify_token_no_user():
+    # Test that a token from a deleted/unexistent user raises an
+    # HTTPException with 400 status code
+    user = "test_user"
+    token = create_token(user)
+    user_db = {}
+
+    with pytest.raises(HTTPException) as exc_info:
+        verify_token(token, user_db)
+
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST

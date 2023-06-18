@@ -38,17 +38,14 @@ async def get_product_review(product_id: int, review_id: int):
         if not review:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Review with supplied ID does not exist",
+                detail="Review not found",
             )
 
         product = await product_db.get(product_id)
         if review.id not in product.review_ids:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=(
-                    "Review with supplied ID exists, but is not "
-                    "associated with the product with supplied ID"
-                ),
+                detail="Product not found",
             )
         return review
 
@@ -62,7 +59,7 @@ async def create_product_review(product_id: int, body: ReviewIn):
         if not product:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Product with supplied ID does not exist",
+                detail="Product not found",
             )
         review = await review_db.save(body)
         product.review_ids.append(review.id)
@@ -81,14 +78,14 @@ async def update_product_review(
         if not review:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Review with supplied ID does not exist",
+                detail="Review not found",
             )
 
         product = await product_db.get(product_id)
         if not product:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Product with supplied ID does not exist",
+                detail="Product not found",
             )
 
         if review.id not in product.review_ids:
@@ -107,18 +104,18 @@ async def delete_product_review(product_id: int, review_id: int):
     # Delete a specific review for a specific product
     lock = Lock()
     with lock:
+        product = await product_db.get(product_id)
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Product not found",
+            )
+
         review = await review_db.get(review_id)
         if not review:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Review not found",
-            )
-
-        product = await product_db.get(product_id)
-        if not product:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Product with supplied ID does not exist",
             )
 
         if review.id not in product.review_ids:

@@ -35,6 +35,19 @@ async def test_post(
         assert response.json() == {"message": "Review created successfully"}
 
 
+async def test_create_for_non_existant_product(
+    client: httpx.AsyncClient,
+    mock_products: List[ProductIn],
+    mock_reviews: List[ReviewIn],
+) -> None:
+    url = f"/products/{str(len(mock_products)+11)}/reviews"
+    for review in mock_reviews:
+        response = await client.post(url, json=review.dict())
+        print(response.json())
+        assert response.status_code == 404
+        assert response.json() == {"detail": "Product not found"}
+
+
 async def test_get_all_product_reviews(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
@@ -106,6 +119,17 @@ async def test_update_wrong(
     assert response.status_code == 404
 
 
+async def test_update_from_wrong_product(
+    client: httpx.AsyncClient,
+    mock_products: List[ProductIn],
+    mock_reviews: List[ReviewIn],
+) -> None:
+    url = f"/products/{str(len(mock_products)+1)}/reviews/0"
+    new_review = mock_reviews[0]
+    response = await client.put(url, json=new_review.dict())
+    assert response.status_code == 404
+
+
 @pytest.mark.asyncio
 async def test_delete_review(
     client: httpx.AsyncClient,
@@ -115,14 +139,16 @@ async def test_delete_review(
     for i, _ in enumerate(mock_reviews):
         url = f"/products/{str(len(mock_products)-1)}/reviews/{str(i)}"
         response = await client.delete(url)
+
         assert response.status_code == 200
         assert response.json() == {"message": "Review deleted successfully"}
+
         response = await client.get(url)
         assert response.status_code == 404
 
 
 @pytest.mark.asyncio
-async def test_delete_wrong_product(
+async def test_delete_non_existant_review(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
@@ -132,9 +158,21 @@ async def test_delete_wrong_product(
         f"/reviews/{str(len(mock_reviews) + 1)}"
     )
     response = await client.delete(url)
-    print(response.json())
+
     assert response.status_code == 404
     assert response.json()["detail"] == "Review not found"
+
+
+@pytest.mark.asyncio
+async def test_delete_non_existant_product(
+    client: httpx.AsyncClient,
+    mock_products: List[ProductIn],
+) -> None:
+    url = f"/products/{str(len(mock_products)+1)}/reviews/0"
+    response = await client.delete(url)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Product not found"
 
 
 @pytest.mark.asyncio
@@ -144,5 +182,6 @@ async def test_empty_reviews(
 ) -> None:
     url = f"/products/{str(len(mock_products)-2)}/reviews"
     response = await client.get(url)
+
     assert response.status_code == 200
     assert response.json() == []
