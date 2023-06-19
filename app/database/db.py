@@ -57,6 +57,7 @@ PRODUCT_DB: Database = Database(Product)
 REVIEW_DB: Database = Database(Review)
 USER_DB: Dict[str, str] = dict()
 
+
 def reset_databases() -> None:
     PRODUCT_DB.reset()
     REVIEW_DB.reset()

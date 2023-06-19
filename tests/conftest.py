@@ -108,4 +108,5 @@ def mock_reviews() -> List[ReviewIn]:
 def reset_databases():
     # prepare something ahead of module ests
     from app.database.db import reset_databases
+
     reset_databases()

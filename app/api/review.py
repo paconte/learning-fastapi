@@ -100,7 +100,10 @@ async def update_product_review(
         return await REVIEW_DB.update(review_id, body)
 
 
-@review_router.delete("/products/{product_id}/reviews/{review_id}", dependencies=[Depends(authenticate)])
+@review_router.delete(
+    "/products/{product_id}/reviews/{review_id}",
+    dependencies=[Depends(authenticate)],
+)
 async def delete_product_review(product_id: int, review_id: int):
     # Delete a specific review for a specific product
     lock = Lock()
