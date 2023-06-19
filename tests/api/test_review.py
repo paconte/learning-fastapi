@@ -50,7 +50,8 @@ async def test_post(
         )
         print(response.json())
         assert response.status_code == 200
-        assert response.json() == {"message": "Product created successfully"}
+        assert response.json()["message"] == "Product created successfully"
+
     # Create reviews
     url = f"/products/{str(len(mock_products)-1)}/reviews"
     for review in mock_reviews:

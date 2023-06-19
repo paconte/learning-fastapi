@@ -46,6 +46,16 @@ async def test_verify_token_invalid():
     assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
+async def test_verify_no_token():
+    # Test that an invalid token raises an HTTPException with 400 status code
+    invalid_token = None
+
+    with pytest.raises(HTTPException) as exc_info:
+        await verify_token(invalid_token)
+
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+
+
 async def test_verify_token_no_user():
     # Test that a token from a deleted/unexistent user raises an
     # HTTPException with 400 status code

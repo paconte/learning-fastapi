@@ -31,8 +31,8 @@ async def sign_in(form: OAuth2PasswordRequestForm = Depends()) -> dict:
     user_passwd = USER_DB.get(form.username)
     if not user_passwd:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Wrong credentials.",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials.",
         )
     if hasher.verify(form.password, user_passwd):
         access_token = create_token(form.username)
@@ -40,5 +40,5 @@ async def sign_in(form: OAuth2PasswordRequestForm = Depends()) -> dict:
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid details passed.",
+        detail="Invalid credentials.",
     )

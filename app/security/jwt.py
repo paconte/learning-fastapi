@@ -18,14 +18,14 @@ def create_token(user: str) -> str:
 
 async def verify_token(token: str) -> dict:
     try:
-        data = jwt.decode(token, generated_key, algorithms=["HS256"])
-        expire = data.get("expires")
-
         if not token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
             )
+
+        data = jwt.decode(token, generated_key, algorithms=["HS256"])
+        expire = data.get("expires")
 
         if datetime.utcnow() > datetime.utcfromtimestamp(expire):
             raise HTTPException(

@@ -3,6 +3,8 @@ from typing import Dict
 import httpx
 import pytest
 
+from app.database.db import USER_DB
+
 
 @pytest.mark.asyncio
 async def test_sign_up(
@@ -56,4 +58,19 @@ async def test_wrong_sign_in(
     )
 
     assert response.status_code == 401
-    assert response.json()["detail"] == "Invalid details passed."
+    assert response.json()["detail"] == "Invalid credentials."
+
+
+@pytest.mark.asyncio
+async def test_sign_in_no_user_in_db(
+    client: httpx.AsyncClient,
+    good_user_auth: Dict[str, str],
+    form_headers: Dict[str, str],
+) -> None:
+    USER_DB.clear()
+    response = await client.post(
+        "/user/signin", data=good_user_auth, headers=form_headers
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid credentials."
