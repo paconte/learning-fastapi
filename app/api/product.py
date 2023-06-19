@@ -37,18 +37,6 @@ async def create_product(
     return {"message": "Product created successfully"}
 
 
-@product_router.put("/products/{id}", response_model=Product)
-async def update_product(id: int, body: ProductIn) -> Product:
-    # Update a specific product by its ID
-    updated_product = await PRODUCT_DB.update(id, body)
-    if not updated_product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product with supplied ID does not exist",
-        )
-    return updated_product
-
-
 @product_router.delete("/products/{id}", dependencies=[Depends(authenticate)])
 async def delete_product(id: int) -> dict:
     # Delete a specific product by its ID

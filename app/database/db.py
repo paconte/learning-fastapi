@@ -12,8 +12,8 @@ class Database:
         self.model: Any = model
         self.lock: Lock = Lock()
 
-    def _insert_index(self, data: Any, index: int) -> Any:
-        new_data = self.model(**data.dict(), id=index)
+    def _insert_id_and_review(self, data: Any, index: int) -> Any:
+        new_data = self.model(**data.dict(), id=index, reviews=[])
         return new_data
 
     async def get(self, index: int) -> Any:
@@ -30,7 +30,7 @@ class Database:
 
     async def save(self, data: Any) -> Any:
         with self.lock:
-            new_data = self._insert_index(data, self.index)
+            new_data = self._insert_id_and_review(data, self.index)
             self.collection[self.index] = new_data
             self.index += 1
             return new_data
@@ -42,7 +42,7 @@ class Database:
                     raise ValueError("ID in data does not match key ID")
                 new_data = data
             else:
-                new_data = self._insert_index(data, id)
+                new_data = self._insert_id_and_review(data, id)
             if id in self.collection:
                 self.collection[id] = new_data
                 return new_data

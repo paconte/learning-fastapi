@@ -1,13 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class ReviewBase(BaseModel):
     content: str
-    user_id: int
 
 
 class Review(ReviewBase):
-    id: int
+    user: EmailStr
 
 
 class ReviewIn(ReviewBase):
