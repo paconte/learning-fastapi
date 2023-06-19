@@ -1,3 +1,11 @@
+"""
+Database module for the application.
+
+This module provides a thread-safe database implementation for managing data
+storage. It contains the `Database` class, which serves as a wrapper around a
+dictionary, providing thread safety by using locks for operations. Faking the
+ACID database properties.
+"""
 from threading import Lock
 from typing import Any, Dict, List
 

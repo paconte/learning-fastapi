@@ -114,11 +114,6 @@ For the product endpoints (`/products/*`) all read (GET) operations do not need 
    git push origin feature/your-feature-name
    ```
 
-## Configuration
-
-The project currently uses the default configuration. You can modify the configuration settings in the respective modules as per your requirements.
-
-
 ## License
 
 This project is licensed under the MIT License.
