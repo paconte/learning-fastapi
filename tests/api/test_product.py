@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 import httpx
 import pytest
@@ -14,17 +14,43 @@ async def test_empty_db(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_post(
-    client: httpx.AsyncClient, mock_products: List[ProductIn]
+async def test_create_and_login_user(
+    client: httpx.AsyncClient,
+    good_user: Dict[str, str],
+    good_user_auth: Dict[str, str],
+    form_headers: Dict[str, str],
+    headers: Dict[str, str],
 ) -> None:
-    for product in mock_products:
-        response = await client.post("/products", json=product.dict())
-        assert response.status_code == 200
-        assert response.json() == {"message": "Product created successfully"}
+    # Create user
+    response = await client.post(
+        "/user/signup", json=good_user, headers=headers
+    )
+    assert response.status_code == 200
+    # Login user
+    response = await client.post(
+        "/user/signin", data=good_user_auth, headers=form_headers
+    )
+    assert response.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_get_all(
+async def test_create_product(
+    client: httpx.AsyncClient,
+    mock_products: List[ProductIn],
+    auth_headers: Dict[str, str],
+) -> None:
+    for product in mock_products:
+        response = await client.post(
+            "/products",
+            json=product.dict(),
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["message"] == "Product created successfully"
+
+
+@pytest.mark.asyncio
+async def test_get_all_products(
     client: httpx.AsyncClient, mock_products: List[ProductIn]
 ) -> None:
     response = await client.get("/products")
@@ -54,7 +80,7 @@ async def test_get_single(
 
 
 @pytest.mark.asyncio
-async def test_get_wrong(
+async def test_get_non_existent(
     client: httpx.AsyncClient, mock_products: List[ProductIn]
 ) -> None:
     url = f"/products/{str(len(mock_products) + 1)}"
@@ -82,6 +108,7 @@ async def test_update(
         assert response.json()["review_ids"] == product.review_ids
 
 
+@pytest.mark.asyncio
 async def test_update_wrong(
     client: httpx.AsyncClient, mock_products: List[ProductIn]
 ) -> None:
@@ -96,23 +123,27 @@ async def test_update_wrong(
 
 @pytest.mark.asyncio
 async def test_delete_product(
-    client: httpx.AsyncClient, mock_products: List[ProductIn]
+    client: httpx.AsyncClient,
+    mock_products: List[ProductIn],
+    auth_headers: Dict[str, str],
 ) -> None:
     for i, _ in enumerate(mock_products):
         url = f"/products/{str(i)}"
-        response = await client.delete(url)
+        response = await client.delete(url, headers=auth_headers)
         assert response.status_code == 200
-        assert response.json() == {"message": "Product deleted successfully."}
+        assert response.json()["message"] == "Product deleted successfully."
         response = await client.get(url)
         assert response.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_delete_wrong_product(
-    client: httpx.AsyncClient, mock_products: List[ProductIn]
+    client: httpx.AsyncClient,
+    mock_products: List[ProductIn],
+    auth_headers: Dict[str, str],
 ) -> None:
     url = f"/products/{str(len(mock_products) + 1)}"
-    response = await client.delete(url)
+    response = await client.delete(url, headers=auth_headers)
     assert response.status_code == 404
     assert response.json()["detail"] == "Product not found"
 

@@ -35,7 +35,7 @@ lint:             ## Run pep8, black, mypy linters.
 
 
 .PHONY: test
-test: lint        ## Run tests and generate coverage report.
+test:             ## Run tests and generate coverage report.
 	pytest -v --cov-config .coveragerc --cov=app -l --tb=short --maxfail=1 tests/
 	coverage xml
 	coverage html

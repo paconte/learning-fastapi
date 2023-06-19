@@ -1,12 +1,14 @@
 import asyncio
-from typing import List
+from typing import Dict, List
 
 import httpx
 import pytest
 
+from app.database.db import reset_dbs
 from app.main import app
 from app.models.products import ProductIn
 from app.models.reviews import ReviewIn
+from app.security.jwt import create_token
 
 
 @pytest.fixture(scope="session")
@@ -22,7 +24,62 @@ async def client():
         yield client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
+async def username() -> str:
+    return "martin.muller@google.com"
+
+
+@pytest.fixture(scope="session")
+def access_token(username) -> str:
+    return create_token(username)
+
+
+@pytest.fixture(scope="session")
+def auth_headers(access_token) -> Dict[str, str]:
+    return {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+
+
+@pytest.fixture(scope="session")
+def auth_headers_no_token() -> Dict[str, str]:
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ",
+    }
+
+
+@pytest.fixture(scope="session")
+def good_user(username) -> Dict[str, str]:
+    return {
+        "email": username,
+        "password": "test_password",
+    }
+
+
+@pytest.fixture(scope="session")
+def good_user_auth(username) -> Dict[str, str]:
+    return {
+        "username": username,
+        "password": "test_password",
+    }
+
+
+@pytest.fixture(scope="session")
+def headers() -> Dict[str, str]:
+    return {"accept": "application/json", "Content-Type": "application/json"}
+
+
+@pytest.fixture(scope="session")
+def form_headers() -> Dict[str, str]:
+    return {
+        "accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+
+
+@pytest.fixture(scope="session")
 def mock_products() -> List[ProductIn]:
     new_product1 = ProductIn(
         name="Fairphone 4",
@@ -39,7 +96,7 @@ def mock_products() -> List[ProductIn]:
     return [new_product1, new_product2]
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def mock_reviews() -> List[ReviewIn]:
     new_review1 = ReviewIn(
         user_id=1,
@@ -54,3 +111,8 @@ def mock_reviews() -> List[ReviewIn]:
         content="I love this product",
     )
     return [new_review1, new_review2, new_review3]
+
+
+@pytest.fixture(scope="module", autouse=True)
+def reset_databases():
+    reset_dbs()

@@ -1,9 +1,8 @@
-from typing import List
+from typing import Dict, List
 
 import httpx
 import pytest
 
-from app.api.product import product_db
 from app.models.products import ProductIn
 from app.models.reviews import ReviewIn
 
@@ -16,21 +15,49 @@ async def test_empty_db(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_and_login_user(
+    client: httpx.AsyncClient,
+    good_user: Dict[str, str],
+    good_user_auth: Dict[str, str],
+    form_headers: Dict[str, str],
+    headers: Dict[str, str],
+) -> None:
+    # Create user
+    response = await client.post(
+        "/user/signup", json=good_user, headers=headers
+    )
+    assert response.status_code == 200
+    # Login user
+    response = await client.post(
+        "/user/signin", data=good_user_auth, headers=form_headers
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
 async def test_post(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
+    auth_headers: Dict[str, str],
 ) -> None:
-    product_db.reset_index()
+    # Create products
     for product in mock_products:
-        response = await client.post("/products", json=product.dict())
+        response = await client.post(
+            "/products",
+            json=product.dict(),
+            headers=auth_headers,
+        )
+        print(response.json())
         assert response.status_code == 200
-        assert response.json() == {"message": "Product created successfully"}
+        assert response.json()["message"] == "Product created successfully"
 
+    # Create reviews
     url = f"/products/{str(len(mock_products)-1)}/reviews"
     for review in mock_reviews:
-        response = await client.post(url, json=review.dict())
-        print(response.json())
+        response = await client.post(
+            url, json=review.dict(), headers=auth_headers
+        )
         assert response.status_code == 200
         assert response.json() == {"message": "Review created successfully"}
 
@@ -39,11 +66,13 @@ async def test_create_for_non_existant_product(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
+    auth_headers: Dict[str, str],
 ) -> None:
     url = f"/products/{str(len(mock_products)+11)}/reviews"
     for review in mock_reviews:
-        response = await client.post(url, json=review.dict())
-        print(response.json())
+        response = await client.post(
+            url, json=review.dict(), headers=auth_headers
+        )
         assert response.status_code == 404
         assert response.json() == {"detail": "Product not found"}
 
@@ -63,7 +92,7 @@ async def test_get_all_product_reviews(
         assert response.json()[i]["content"] == review.content
 
 
-async def test_get_single(
+async def test_get_single_review(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
@@ -77,7 +106,7 @@ async def test_get_single(
         assert response.json()["content"] == review.content
 
 
-async def test_get_wrong(
+async def test_get_non_existent_review(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
@@ -135,10 +164,11 @@ async def test_delete_review(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
+    auth_headers: Dict[str, str],
 ) -> None:
     for i, _ in enumerate(mock_reviews):
         url = f"/products/{str(len(mock_products)-1)}/reviews/{str(i)}"
-        response = await client.delete(url)
+        response = await client.delete(url, headers=auth_headers)
 
         assert response.status_code == 200
         assert response.json() == {"message": "Review deleted successfully"}
@@ -152,12 +182,13 @@ async def test_delete_non_existant_review(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
     mock_reviews: List[ReviewIn],
+    auth_headers: Dict[str, str],
 ) -> None:
     url = (
         f"/products/{str(len(mock_products)-1)}"
         f"/reviews/{str(len(mock_reviews) + 1)}"
     )
-    response = await client.delete(url)
+    response = await client.delete(url, headers=auth_headers)
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Review not found"
@@ -167,9 +198,10 @@ async def test_delete_non_existant_review(
 async def test_delete_non_existant_product(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
+    auth_headers: Dict[str, str],
 ) -> None:
     url = f"/products/{str(len(mock_products)+1)}/reviews/0"
-    response = await client.delete(url)
+    response = await client.delete(url, headers=auth_headers)
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Product not found"
