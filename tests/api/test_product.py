@@ -2,6 +2,7 @@ from typing import Dict, List
 
 import httpx
 import pytest
+from pytest_lazyfixture import lazy_fixture
 
 from app.models.products import ProductIn
 
@@ -33,20 +34,36 @@ async def test_create_and_login_user(
     assert response.status_code == 200
 
 
+@pytest.mark.parametrize(
+    "headers, expected_status_code, expected_messsage",
+    [
+        (
+            lazy_fixture("auth_headers"),
+            200,
+            "Product created successfully",
+        ),
+        (lazy_fixture("auth_headers_no_token"), 401, "Invalid token"),
+    ],
+)
 @pytest.mark.asyncio
 async def test_create_product(
     client: httpx.AsyncClient,
     mock_products: List[ProductIn],
-    auth_headers: Dict[str, str],
+    headers: Dict[str, str],
+    expected_status_code: int,
+    expected_messsage: str,
 ) -> None:
     for product in mock_products:
         response = await client.post(
             "/products",
             json=product.dict(),
-            headers=auth_headers,
+            headers=headers,
         )
-        assert response.status_code == 200
-        assert response.json() == {"message": "Product created successfully"}
+        assert response.status_code == expected_status_code
+        assert (
+            response.json().get("message") == expected_messsage
+            or response.json().get("detail") == expected_messsage
+        )
 
 
 @pytest.mark.asyncio

@@ -21,25 +21,28 @@ async def verify_token(token: str) -> dict:
         data = jwt.decode(token, generated_key, algorithms=["HS256"])
         expire = data.get("expires")
 
-        if expire is None:
+        if not token:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No access token supplied",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
             )
+
         if datetime.utcnow() > datetime.utcfromtimestamp(expire):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Token expired!"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired!",
             )
 
         user_exist = USER_DB.get(data["user"])
         if not user_exist:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
             )
 
         return data
 
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         )

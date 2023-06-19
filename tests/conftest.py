@@ -4,6 +4,7 @@ from typing import Dict, List
 import httpx
 import pytest
 
+from app.database.db import reset_dbs
 from app.main import app
 from app.models.products import ProductIn
 from app.models.reviews import ReviewIn
@@ -38,6 +39,14 @@ def auth_headers(access_token) -> Dict[str, str]:
     return {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
+    }
+
+
+@pytest.fixture(scope="session")
+def auth_headers_no_token() -> Dict[str, str]:
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ",
     }
 
 
@@ -106,7 +115,4 @@ def mock_reviews() -> List[ReviewIn]:
 
 @pytest.fixture(scope="module", autouse=True)
 def reset_databases():
-    # prepare something ahead of module ests
-    from app.database.db import reset_databases
-
-    reset_databases()
+    reset_dbs()

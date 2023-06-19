@@ -33,7 +33,7 @@ async def test_verify_token_expired():
         with freeze_time("5000-01-01"):
             await verify_token(expired_token)
 
-    assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 async def test_verify_token_invalid():
@@ -43,7 +43,7 @@ async def test_verify_token_invalid():
     with pytest.raises(HTTPException) as exc_info:
         await verify_token(invalid_token)
 
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 async def test_verify_token_no_user():
@@ -55,4 +55,4 @@ async def test_verify_token_no_user():
     with pytest.raises(HTTPException) as exc_info:
         await verify_token(token)
 
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
