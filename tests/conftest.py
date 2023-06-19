@@ -85,13 +85,11 @@ def mock_products() -> List[ProductIn]:
         name="Fairphone 4",
         category="smartphone",
         score="90",
-        review_ids=[],
     )
     new_product2 = ProductIn(
         name="iPhone 14",
         category="smartphone",
         score="75",
-        review_ids=[],
     )
     return [new_product1, new_product2]
 
@@ -99,15 +97,12 @@ def mock_products() -> List[ProductIn]:
 @pytest.fixture(scope="session")
 def mock_reviews() -> List[ReviewIn]:
     new_review1 = ReviewIn(
-        user_id=1,
         content="I really like this product",
     )
     new_review2 = ReviewIn(
-        user_id=2,
         content="I don't really like this product",
     )
     new_review3 = ReviewIn(
-        user_id=3,
         content="I love this product",
     )
     return [new_review1, new_review2, new_review3]

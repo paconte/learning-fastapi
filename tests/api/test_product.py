@@ -61,7 +61,7 @@ async def test_get_all_products(
         assert response.json()[i]["name"] == product.name
         assert response.json()[i]["category"] == product.category
         assert response.json()[i]["score"] == product.score
-        assert response.json()[i]["review_ids"] == product.review_ids
+        assert response.json()[i]["reviews"] == []
 
 
 @pytest.mark.asyncio
@@ -76,7 +76,7 @@ async def test_get_single(
         assert response.json()["name"] == product.name
         assert response.json()["category"] == product.category
         assert response.json()["score"] == product.score
-        assert response.json()["review_ids"] == product.review_ids
+        assert response.json()["reviews"] == []
 
 
 @pytest.mark.asyncio
@@ -85,36 +85,6 @@ async def test_get_non_existent(
 ) -> None:
     url = f"/products/{str(len(mock_products) + 1)}"
     response = await client.get(url)
-    assert response.status_code == 404
-    assert (
-        response.json()["detail"] == "Product with supplied ID does not exist"
-    )
-
-
-@pytest.mark.asyncio
-async def test_update(
-    client: httpx.AsyncClient, mock_products: List[ProductIn]
-) -> None:
-    response = await client.get("/products")
-    for i, product in enumerate(mock_products):
-        url = f"/products/{str(i)}"
-        product.score = "89"
-        response = await client.put(url, json=product.dict())
-        assert response.status_code == 200
-        assert response.json()["id"] == i
-        assert response.json()["name"] == product.name
-        assert response.json()["category"] == product.category
-        assert response.json()["score"] == "89"
-        assert response.json()["review_ids"] == product.review_ids
-
-
-@pytest.mark.asyncio
-async def test_update_wrong(
-    client: httpx.AsyncClient, mock_products: List[ProductIn]
-) -> None:
-    url = f"/products/{str(len(mock_products) + 1)}"
-    product = mock_products[0]
-    response = await client.put(url, json=product.dict())
     assert response.status_code == 404
     assert (
         response.json()["detail"] == "Product with supplied ID does not exist"
