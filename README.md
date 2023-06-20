@@ -90,6 +90,10 @@ For the product endpoints (`/products/*`) all read (GET) operations do not need 
 
 2. Implement your changes, write tests, and ensure the code passes linting.
 
+   ```bash
+   make fmt lint
+   ```
+
 3. Run the tests:
 
    ```bash
