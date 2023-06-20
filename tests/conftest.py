@@ -1,3 +1,11 @@
+"""
+conftest module for pytest fixtures.
+
+This module contains fixtures used by pytest to set up the test environment.
+
+Usage:
+    pytest automatically detects and uses the fixtures defined in this file.
+"""
 import asyncio
 from typing import Dict, List
 
